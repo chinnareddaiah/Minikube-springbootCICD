@@ -1,7 +1,7 @@
 pipeline {
     agent any
 	environment {
-		registry = 'cloudtechmasters/springboot-k8s:latest'
+		registry = 'chinnareddaiah/springboot-k8s:latest'
 		registryCredentials = 'docker-credentials'
 		dockerImage = ''
 	}
@@ -40,6 +40,7 @@ pipeline {
             steps {
                 withCredentials([kubeconfigFile(credentialsId: 'kube-credentials', variable: 'KUBECONFIG')]) {
                 	sh 'sudo kubectl apply -f deployement.yml'
+			sh 'sudo kubectl apply -f service.yml'
                 }
             }
         }
