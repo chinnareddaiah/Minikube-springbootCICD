@@ -1,0 +1,26 @@
+node{
+    stage("GIT CheckOut"){
+        git branch: 'main', url: 'https://github.com/chinnareddaiah/Minikube-springbootCICD.git'
+    }
+    stage("Maven Clean Build"){
+        def mavenHome = tool name: "maven-3", type: "maven"
+        def mavenCMD = "${mavenHome}/bin/mvn"
+        sh "${mavenCMD} clean install"
+    }
+    stage("Build a Docker Image"){
+        sh "docker build -t chinnareddaiah/springboot-k8s:latest ."
+    }
+    stage("Docker Push"){
+        withCredentials([string(credentialsId: 'DOCKER_HUB_CREDENTIALS', variable: 'DOCKER_HUB_CREDENTIALS')]) {
+        sh "docker login -u chinnareddaiah -p ${DOCKER_HUB_CREDENTIALS}"
+    }
+        
+    sh "docker push chinnareddaiah/springboot-k8s:latest "
+    }
+    stage("Deploy into k8s Cluster"){
+        withCredentials([kubeconfigFile(credentialsId: 'kube-credentials', variable: 'kube-credentials')]) {
+                	sh 'kubectl apply -f deployement.yml'
+			        sh 'kubectl apply -f service.yml'
+        }
+    }
+}
